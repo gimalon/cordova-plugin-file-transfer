@@ -808,6 +808,7 @@ public class FileTransfer extends CordovaPlugin {
                 PluginResult result = null;
                 TrackingInputStream inputStream = null;
                 boolean cached = false;
+                boolean redirected = false;
 
                 OutputStream outputStream = null;
                 try {
@@ -858,8 +859,16 @@ public class FileTransfer extends CordovaPlugin {
                         if (headers != null) {
                             addHeadersToRequest(connection, headers);
                         }
-        
+
                         connection.connect();
+                        if (connection.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+                            redirected = true;
+                            String redirectedURL = connection.getHeaderField("Location");
+                            Log.d(LOG_TAG, "Redirecting to URL: " + redirectedURL);
+                            //call download again with new URL
+                            download(redirectedURL, target, args, callbackContext);
+                            return;
+                        }
                         if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
                             cached = true;
                             connection.disconnect();
@@ -983,7 +992,10 @@ public class FileTransfer extends CordovaPlugin {
                     if (!cached && result.getStatus() != PluginResult.Status.OK.ordinal() && file != null) {
                         file.delete();
                     }
-                    context.sendPluginResult(result);
+
+                    if(!redirected) {
+                      context.sendPluginResult(result);
+                    }
                 }
             }
         });

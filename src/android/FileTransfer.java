@@ -727,7 +727,7 @@ public class FileTransfer extends CordovaPlugin {
      * @param source        URL of the server to receive the file
      * @param target            Full path of the file on the file system
      */
-    private void download(final String source, final String target, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    private void download(final String source, final String target, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         final CordovaResourceApi resourceApi = webView.getResourceApi();
